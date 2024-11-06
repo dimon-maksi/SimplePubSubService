@@ -39,7 +39,8 @@ export class SubpubController implements ISubpubController {
         @Param('topic') topic: string,
         @Body() subscriberData: any
     ): Promise<void> {
-        return this.subpubService.unsubscribe(topic, subscriberData);
+        this.subpubService.unsubscribe(topic, subscriberData);
+        return;
     }
 
     @Post(':topic/publish')
@@ -48,7 +49,8 @@ export class SubpubController implements ISubpubController {
         @Param('topic') topic: string,
         @Body() messageData: any
     ): Promise<void> {
-        return this.subpubService.publish(topic, messageData);
+        this.subpubService.publish(topic, messageData);
+        return;
     }
 
     @Get()
@@ -61,6 +63,6 @@ export class SubpubController implements ISubpubController {
         @Param('topic') topic: string,
         @Param('count') count: number
     ): Promise<IMessage[]> {
-        return this.subpubService.getLastMessages(topic);
+        return this.subpubService.getLastMessages(topic, count);
     }
 }
