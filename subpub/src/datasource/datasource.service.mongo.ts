@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IDatasourceService } from './datasource.service.interface';
-import { ITopic, IMessage } from './data/data.interface';
+import { ITopic, IMessage, ISubscriber } from './data/data.interface';
 
 @Injectable()
 export class MongoDatasourceService implements IDatasourceService {
@@ -18,7 +18,7 @@ export class MongoDatasourceService implements IDatasourceService {
     }
     addSubscriberFromTopic(
         topicName: string,
-        subscriberId: string
+        subscriber: ISubscriber
     ): Promise<void> {
         throw new Error('Method not implemented.');
     }

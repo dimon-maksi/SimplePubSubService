@@ -1,3 +1,5 @@
+import { Response } from 'express';
+
 export interface ITopic {
     topicName: string;
     subscribers: ISubscriber[];
@@ -6,6 +8,7 @@ export interface ITopic {
 
 export interface ISubscriber {
     subscriberId: string;
+    response?: Response;
 }
 
 export interface IMessage {

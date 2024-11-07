@@ -1,42 +1,54 @@
 import { Injectable } from '@nestjs/common';
-import { Response } from 'express';
-import { IMessage, ITopic } from '../datasource/data/data.interface';
+import { response, Response } from 'express';
+import {
+    IMessage,
+    ITopic,
+    ISubscriber,
+} from '../datasource/data/data.interface';
 import { IDatasourceService } from 'src/datasource/datasource.service.interface';
+import { Logger } from '@nestjs/common';
+import { ArrayDatasourceService } from 'src/datasource/datasource.service.array';
 
 export class SubpubService {
-    constructor(private readonly datasourceService: IDatasourceService) {}
+    datasourceService: IDatasourceService = new ArrayDatasourceService();
+    // constructor(private readonly datasourceService: IDatasourceService) {}
 
-    async subscribe(topic: string, res: Response<any, Record<string, any>>) {
+    async subscribe(topic: string, res: Response) {
         try {
-            const topicData =
-                await this.datasourceService.getTopicByName(topic);
+            Logger.log(`Say something`);
+            let topicData = await this.datasourceService.getTopicByName(topic);
 
+            Logger.log(`Are you alive?`);
             if (!topicData) {
-                return res.status(404).send('Topic not found');
+                topicData = await this.datasourceService.createTopic(topic);
+                Logger.log(`Topic ${topic} was creater`);
             }
 
-            // Here, we would manage SSE connection logic
-            // Assuming you have logic to manage subscribers in topicData
+            Logger.log(`Topic ${topic} is here`);
+            const subscriberId = Date.now().toString();
+            const subscriber: ISubscriber = {
+                subscriberId: subscriberId,
+                response: res,
+            };
+            await this.datasourceService.addSubscriberFromTopic(
+                topic,
+                subscriber
+            );
 
-            // For SSE (Server-Sent Events), subscribe the user
-            // You can store the response stream (`res`) and send updates later
-            // Implement your SSE logic here (like sending events on new message publish)
+            res.write(
+                `data: ${JSON.stringify({ message: `Subscribed to ${topic}` })}\n\n`
+            );
 
-            res.status(200).send({ message: `Subscribed to ${topic}` });
+            res.on('close', async () => {
+                console.log('Client disconnected from SSE');
+                await this.datasourceService.removeSubscriberFromTopic(
+                    topic,
+                    subscriberId
+                );
+                res.end();
+            });
         } catch (error) {
             res.status(500).send('Failed to subscribe');
-        }
-    }
-
-    async unsubscribe(topic: string, subscriberData: any) {
-        try {
-            await this.datasourceService.removeSubscriberFromTopic(
-                topic,
-                subscriberData.subscriberId
-            );
-            return { message: `Unsubscribed from ${topic}` };
-        } catch (error) {
-            throw new Error(`Failed to unsubscribe from ${topic}`);
         }
     }
 
@@ -48,12 +60,24 @@ export class SubpubService {
             if (!topicData) {
                 throw new Error('Topic not found');
             }
-            // Add message send logic
+
+            const newMessage: IMessage = {
+                topic: topic,
+                content: messageData,
+                timestamp: new Date(),
+            };
             await this.datasourceService.publishMessageToTopic(
                 topic,
-                messageData
+                newMessage
             );
-            return { message: 'Message published successfully' };
+
+            for (const subscriber of topicData.subscribers) {
+                if (subscriber.response) {
+                    subscriber.response.write(
+                        `data: ${JSON.stringify(newMessage)}\n\n`
+                    );
+                }
+            }
         } catch (error) {
             throw new Error(`Failed to publish message to ${topic}`);
         }

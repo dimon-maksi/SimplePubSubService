@@ -16,31 +16,16 @@ import { IMessage, ITopic } from 'src/datasource/data/data.interface';
 export class SubpubController implements ISubpubController {
     constructor(private readonly subpubService: SubpubService) {}
 
-    // Subscribe with SSE
     @Get(':topic/subscribe')
     async subscribe(
         @Param('topic') topic: string,
         @Res() res: Response
     ): Promise<void> {
-        // Set headers to keep connection open for SSE
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
 
-        // Call the service method to handle SSE subscriptions
         this.subpubService.subscribe(topic, res);
-
-        // Return to keep the SSE connection open
-        return;
-    }
-
-    @Post(':topic/unsubscribe')
-    @HttpCode(200)
-    async unsubscribe(
-        @Param('topic') topic: string,
-        @Body() subscriberData: any
-    ): Promise<void> {
-        this.subpubService.unsubscribe(topic, subscriberData);
-        return;
     }
 
     @Post(':topic/publish')

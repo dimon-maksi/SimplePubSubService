@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { SubpubModule } from './subpub/subpub.module';
 import { DatasourceModule } from './datasource/datasource.module';
-import { DatasorceService } from './datasorce/datasorce.service';
+import { ArrayDatasourceService } from './datasource/datasource.service.array';
 
 @Module({
-  providers: [DatasorceService],
-  imports: [SubpubModule, DatasourceModule],
+    imports: [SubpubModule, DatasourceModule],
+    providers: [ArrayDatasourceService],
 })
 export class AppModule {}

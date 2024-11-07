@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IDatasourceService } from './datasource.service.interface';
 import { ITopic, IMessage, ISubscriber } from './data/data.interface';
 
@@ -11,6 +11,7 @@ export class ArrayDatasourceService implements IDatasourceService {
     }
 
     async getTopicByName(topicName: string): Promise<ITopic | null> {
+        Logger.log(`Array is working`);
         const topic = this.topics.find(topic => topic.topicName === topicName);
         return Promise.resolve(topic || null);
     }
@@ -44,7 +45,7 @@ export class ArrayDatasourceService implements IDatasourceService {
 
     async addSubscriberFromTopic(
         topicName: string,
-        subscriberId: string
+        subscriber: ISubscriber
     ): Promise<void> {
         const topic = await this.getTopicByName(topicName);
         if (!topic) {
@@ -52,17 +53,13 @@ export class ArrayDatasourceService implements IDatasourceService {
         }
 
         const existingSubscriber = topic.subscribers.find(
-            subscriber => subscriber.subscriberId === subscriberId
+            subscriber => subscriber.subscriberId === subscriber.subscriberId
         );
         if (existingSubscriber) {
             throw new Error('Subscriber already exists for this topic');
         }
 
-        const newSubscriber: ISubscriber = {
-            subscriberId,
-        };
-
-        topic.subscribers.push(newSubscriber);
+        topic.subscribers.push(subscriber);
         return Promise.resolve();
     }
 
@@ -82,7 +79,7 @@ export class ArrayDatasourceService implements IDatasourceService {
             throw new Error('Subscriber not found');
         }
 
-        topic.subscribers.splice(subscriberIndex, 1); // Remove subscriber
+        topic.subscribers.splice(subscriberIndex, 1);
         return Promise.resolve();
     }
 
@@ -114,6 +111,7 @@ export class ArrayDatasourceService implements IDatasourceService {
         };
 
         topic.messages.push(newMessage);
+
         return Promise.resolve();
     }
 }

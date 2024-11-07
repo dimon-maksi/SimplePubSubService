@@ -1,4 +1,4 @@
-import { IMessage, ITopic } from './data/data.interface';
+import { IMessage, ISubscriber, ITopic } from './data/data.interface';
 
 export interface IDatasourceService {
     getAllTopics(): Promise<ITopic[]>;
@@ -7,7 +7,7 @@ export interface IDatasourceService {
     deleteTopic(topicName: string): Promise<void>;
     addSubscriberFromTopic(
         topicName: string,
-        subscriberId: string
+        subscriber: ISubscriber
     ): Promise<void>;
     removeSubscriberFromTopic(
         topicName: string,
